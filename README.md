@@ -2,6 +2,8 @@
 
 A new Flutter project.
 
+flutter pub getを実行してください。
+
 ## Getting Started
 
 This project is a starting point for a Flutter application.
