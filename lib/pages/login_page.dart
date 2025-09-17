@@ -160,8 +160,11 @@ class SignUpScreen extends ConsumerWidget {
 
   // Googleログイン処理
   Future<void> signInWithGoogle() async {
+    const webClientId =
+        '571641120158-i7diqnjg7hqd2m6gorpj928if8oj56j1.apps.googleusercontent.com';
+    final GoogleSignIn googleSignIn = GoogleSignIn(clientId: webClientId);
     // 1. Googleの認証フローをトリガー
-    final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+    final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
 
     // 2. ユーザーがキャンセルしなければ、認証情報を取得
     if (googleUser == null) {
