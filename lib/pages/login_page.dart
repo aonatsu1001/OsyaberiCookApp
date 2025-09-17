@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 final isLoadingProvider = StateProvider<bool>((ref) => false);
 final errorMessageProvider = StateProvider<String?>((ref) => null);
@@ -106,8 +108,8 @@ class SignUpScreen extends ConsumerWidget {
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton.icon(
-                      icon: Image.network(
-                        "https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg",
+                      icon: SvgPicture.asset(
+                        'assets/google_logo.svg', // ローカルのファイルを指定
                         height: 24,
                       ),
                       label: const Text("Googleで続行"),
@@ -115,14 +117,21 @@ class SignUpScreen extends ConsumerWidget {
                           ? null
                           : () async {
                               ref.read(isLoadingProvider.notifier).state = true;
+                              ref.read(errorMessageProvider.notifier).state =
+                                  null; // エラーメッセージをリセット
                               try {
-                                await login();
+                                // 先ほど作成したsignInWithGoogle関数を呼び出す
+                                await signInWithGoogle();
                               } catch (e) {
                                 ref.read(errorMessageProvider.notifier).state =
-                                    "Googleログインに失敗しました: $e";
+                                    "Googleログインに失敗しました: ${e.toString()}";
                               } finally {
-                                ref.read(isLoadingProvider.notifier).state =
-                                    false;
+                                // ローディング状態を解除
+                                if (context.mounted) {
+                                  // ウィジェットがまだ存在するか確認
+                                  ref.read(isLoadingProvider.notifier).state =
+                                      false;
+                                }
                               }
                             },
                     ),
@@ -149,10 +158,27 @@ class SignUpScreen extends ConsumerWidget {
     );
   }
 
-  // 仮の処理
-  Future<void> login() async {
-    await Future.delayed(const Duration(seconds: 2));
-    // Googleログイン処理をここに実装
+  // Googleログイン処理
+  Future<void> signInWithGoogle() async {
+    // 1. Googleの認証フローをトリガー
+    final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+
+    // 2. ユーザーがキャンセルしなければ、認証情報を取得
+    if (googleUser == null) {
+      // ユーザーがログインをキャンセルした
+      return;
+    }
+    final GoogleSignInAuthentication googleAuth =
+        await googleUser.authentication;
+
+    // 3. 認証情報を使ってFirebaseのクレデンシャルを生成
+    final credential = GoogleAuthProvider.credential(
+      accessToken: googleAuth.accessToken,
+      idToken: googleAuth.idToken,
+    );
+
+    // 4. Firebaseにログイン
+    await FirebaseAuth.instance.signInWithCredential(credential);
   }
 
   Future<void> signUp(String email, String password) async {
