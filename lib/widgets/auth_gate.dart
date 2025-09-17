@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/auth_provider.dart';
+import '../pages/login_page.dart';
 // import '../screens/home_screen.dart'; // TODO: 後で作成
 // import '../screens/login_screen.dart'; // TODO: 後で作成
 
@@ -20,7 +21,7 @@ class AuthGate extends ConsumerWidget {
           return const Scaffold(body: Center(child: Text("ホーム画面")));
         } else {
           // return const LoginScreen(); // TODO: ログイン画面に差し替える
-          return const Scaffold(body: Center(child: Text("ログイン画面")));
+          return const SignUpScreen();
         }
       },
       // 読み込み中
