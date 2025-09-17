@@ -1,0 +1,90 @@
+{
+  "project_info": {
+    "project_number": "571641120158",
+    "project_id": "oshaberi-cook",
+    "storage_bucket": "oshaberi-cook.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:571641120158:android:c40cd6b6fd774efc69c28f",
+        "android_client_info": {
+          "package_name": "com.example.docomohack"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "571641120158-i7diqnjg7hqd2m6gorpj928if8oj56j1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDYugD3MIy_GFjcEiU9m5tig5Ftja3xy-U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "571641120158-i7diqnjg7hqd2m6gorpj928if8oj56j1.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "571641120158-d64mbm260b7t07nr4or0vtaglm6ila9c.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.docomohack"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:571641120158:android:067cf2be3898b20969c28f",
+        "android_client_info": {
+          "package_name": "com.oshaberi"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "571641120158-rl3mv4h0tkrqef5q4i01gqbngk3d3fe8.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.oshaberi",
+            "certificate_hash": "467111cd2daf2ed4a660a3b49103ebed8d946164"
+          }
+        },
+        {
+          "client_id": "571641120158-i7diqnjg7hqd2m6gorpj928if8oj56j1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDYugD3MIy_GFjcEiU9m5tig5Ftja3xy-U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "571641120158-i7diqnjg7hqd2m6gorpj928if8oj56j1.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "571641120158-d64mbm260b7t07nr4or0vtaglm6ila9c.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.docomohack"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
