@@ -1,0 +1,38 @@
+# General
+.DS_Store
+.idea/
+.vscode/
+build/
+.dart_tool/
+.packages
+.pub-cache/
+pubspec.lock
+
+# Flutter specific
+/ios/Pods/
+/ios/Flutter/App.framework
+/ios/Flutter/engine.framework
+/ios/Flutter/flutter_assets/
+/ios/Flutter/.last_build_id
+/ios/.symlinks/
+/ios/Runner.xcworkspace/
+/ios/Runner.xcodeproj/project.xcworkspace/
+/ios/Runner.xcodeproj/xcuserdata/
+
+# Android specific
+/android/.gradle/
+/android/local.properties
+/android/app/build/
+/android/key.properties
+/android/gradlew
+/android/gradlew.bat
+/android/gradle/wrapper/gradle-wrapper.jar
+
+# Build artifacts
+*.apk
+*.aab
+*.ipa
+*.app
+
+# Sensitive information
+secrets.json
