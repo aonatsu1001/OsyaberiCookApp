@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+// ▼▼▼ この行を修正しました ▼▼▼
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class RecipeProgressPage extends StatelessWidget {
@@ -13,10 +14,6 @@ class RecipeProgressPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print('--- RecipeProgressPage ---');
-    print('recipeId: $recipeId');
-    print('recipeName: $recipeName');
-
     return Scaffold(
       backgroundColor: const Color(0xFFFDF2E9),
       appBar: AppBar(
@@ -34,7 +31,6 @@ class RecipeProgressPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 材料リスト（サブコレクションから取得）
             const Text(
               '材料を確認してください。',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
@@ -47,50 +43,54 @@ class RecipeProgressPage extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      '必要な材料（2人分）',
+                      '必要な材料',
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 8),
-                    StreamBuilder<QuerySnapshot>(
-                      stream: FirebaseFirestore.instance
+                    FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+                      future: FirebaseFirestore.instance
                           .collection('recipes')
                           .doc(recipeId)
-                          .collection('ingredients')
-                          .orderBy(FieldPath.documentId)
-                          .snapshots(),
+                          .collection('content')
+                          .doc('ingredients')
+                          .get(),
                       builder: (context, snapshot) {
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {
-                          return const Center(
-                            child: CircularProgressIndicator(),
-                          );
+                          return const Center(child: CircularProgressIndicator());
                         }
-                        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                        if (!snapshot.hasData || !snapshot.data!.exists) {
                           return const Text(
-                            '材料データがありません',
+                            '材料データが見つかりません',
                             style: TextStyle(color: Colors.red),
                           );
                         }
-                        final ingredients = snapshot.data!.docs;
+                        
+                        final docData = snapshot.data!.data();
+                        if (docData == null || docData.isEmpty) {
+                           return const Text(
+                            '材料が登録されていません',
+                            style: TextStyle(color: Colors.red),
+                          );
+                        }
+
+                        final sortedKeys = docData.keys.toList()..sort();
+                        final ingredients = sortedKeys.map((key) => docData[key] as Map<String, dynamic>).toList();
+
                         return Table(
                           columnWidths: const {
                             0: FlexColumnWidth(2),
                             1: FlexColumnWidth(1),
                           },
-                          children: ingredients.map((doc) {
-                            final data = doc.data() as Map<String, dynamic>;
+                          children: ingredients.map((data) {
                             return TableRow(
                               children: [
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 4,
-                                  ),
+                                  padding: const EdgeInsets.symmetric(vertical: 4),
                                   child: Text(data['name'] ?? ''),
                                 ),
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 4,
-                                  ),
+                                  padding: const EdgeInsets.symmetric(vertical: 4),
                                   child: Text(data['amount'] ?? ''),
                                 ),
                               ],
