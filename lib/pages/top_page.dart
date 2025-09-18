@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
+import 'recipe_progress_page.dart';
 import '../providers/recipe_provider.dart';
 import '../providers/auth_provider.dart';
 
@@ -24,10 +24,7 @@ class TopPage extends ConsumerWidget {
           children: [
             const Text(
               "おしゃべりクック",
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
             Container(
               margin: const EdgeInsets.only(top: 4),
@@ -61,7 +58,8 @@ class TopPage extends ConsumerWidget {
                   );
                 },
                 loading: () => const Center(child: CircularProgressIndicator()),
-                error: (error, stack) => Center(child: Text('エラーが発生しました: $error')),
+                error: (error, stack) =>
+                    Center(child: Text('エラーが発生しました: $error')),
               ),
             ),
           ],
@@ -82,14 +80,16 @@ class CustomAppHeader extends StatelessWidget {
       child: const Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text('今日のごはん何にする？', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+          Text(
+            '今日のごはん何にする？',
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          ),
           Icon(Icons.search, size: 30),
         ],
       ),
     );
   }
 }
-
 
 class RecipeCard extends ConsumerWidget {
   final QueryDocumentSnapshot<Map<String, dynamic>> recipeDoc;
@@ -99,7 +99,7 @@ class RecipeCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final recipeData = recipeDoc.data();
-    
+
     return Card(
       elevation: 2,
       margin: const EdgeInsets.only(bottom: 24.0, top: 0),
@@ -110,8 +110,16 @@ class RecipeCard extends ConsumerWidget {
         children: [
           CachedNetworkImage(
             imageUrl: recipeData['photoUrl'] ?? '',
-            placeholder: (context, url) => Container(height: 200, color: Colors.grey[200], child: const Center(child: CircularProgressIndicator())),
-            errorWidget: (context, url, error) => Container(height: 200, color: Colors.grey[200], child: const Icon(Icons.error)),
+            placeholder: (context, url) => Container(
+              height: 200,
+              color: Colors.grey[200],
+              child: const Center(child: CircularProgressIndicator()),
+            ),
+            errorWidget: (context, url, error) => Container(
+              height: 200,
+              color: Colors.grey[200],
+              child: const Icon(Icons.error),
+            ),
             fit: BoxFit.cover,
             width: double.infinity,
             height: 200,
@@ -123,26 +131,32 @@ class RecipeCard extends ConsumerWidget {
               children: [
                 Text(
                   recipeData['recipeName'] ?? 'タイトルなし',
-                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-                // ★★★ ここからが追加部分 ★★★
-                const SizedBox(height: 8), // タイトルと説明の間の小さな余白
-                Text(
-                  recipeData['Description'] ?? '', // 'Description'フィールドを表示
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[600],
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-                // ★★★ ここまでが追加部分 ★★★
-                const SizedBox(height: 16), // 説明とアイコン行の間の余白
+                const SizedBox(height: 8),
+                Text(
+                  recipeData['Description'] ?? '',
+                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                ),
+                const SizedBox(height: 16),
                 Row(
                   children: [
-                    const Icon(Icons.timer_outlined, size: 16, color: Colors.grey),
+                    const Icon(
+                      Icons.timer_outlined,
+                      size: 16,
+                      color: Colors.grey,
+                    ),
                     const SizedBox(width: 4),
                     Text('${recipeData['time'] ?? '?'}分'),
                     const SizedBox(width: 16),
-                    const Icon(Icons.people_outline, size: 16, color: Colors.grey),
+                    const Icon(
+                      Icons.people_outline,
+                      size: 16,
+                      color: Colors.grey,
+                    ),
                     const SizedBox(width: 4),
                     Text('${recipeData['servings'] ?? '?'}人分'),
                   ],
@@ -151,14 +165,46 @@ class RecipeCard extends ConsumerWidget {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 12), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-                    child: const Text('このレシピで料理を始める', style: TextStyle(fontWeight: FontWeight.bold)),
+                    onPressed: () {
+                      final content = recipeData['content'] ?? {};
+                      final ingredients =
+                          (content['ingredients'] as List<dynamic>?)
+                              ?.map((e) => Map<String, dynamic>.from(e))
+                              .toList() ??
+                          [];
+                      final steps =
+                          (content['steps'] as List<dynamic>?)
+                              ?.map((e) => Map<String, dynamic>.from(e))
+                              .toList() ??
+                          [];
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => RecipeProgressPage(
+                            recipeName: recipeData['recipeName'] ?? '',
+                            ingredients: ingredients,
+                            steps: steps,
+                          ),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.black,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text(
+                      'このレシピで料理を始める',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                   ),
                 ),
               ],
             ),
-          )
+          ),
         ],
       ),
     );
