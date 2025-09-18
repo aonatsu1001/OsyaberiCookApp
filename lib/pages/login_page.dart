@@ -7,11 +7,23 @@ import 'package:flutter_svg/flutter_svg.dart';
 final isLoadingProvider = StateProvider<bool>((ref) => false);
 final errorMessageProvider = StateProvider<String?>((ref) => null);
 
-class SignUpScreen extends ConsumerWidget {
+class SignUpScreen extends ConsumerStatefulWidget {
   const SignUpScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SignUpScreen> createState() => _SignUpScreenState();
+}
+
+class _SignUpScreenState extends ConsumerState<SignUpScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // サインイン画面が表示されたときだけサインアウト
+    FirebaseAuth.instance.signOut();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final emailController = TextEditingController();
     final passwordController = TextEditingController();
     final isLoading = ref.watch(isLoadingProvider);

@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "571641120158-1itu2m6gvgvo2jfqkk2jcellakf0n81s.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.docomohack",
+            "certificate_hash": "467111cd2daf2ed4a660a3b49103ebed8d946164"
+          }
+        },
+        {
           "client_id": "571641120158-i7diqnjg7hqd2m6gorpj928if8oj56j1.apps.googleusercontent.com",
           "client_type": 3
         }
