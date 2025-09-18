@@ -155,12 +155,6 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                       errorMessage,
                       style: const TextStyle(color: Colors.red),
                     ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    "「続行」をクリックすることで、利用規約とプライバシーポリシーに同意したことになります。",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 12, color: Colors.grey),
-                  ),
                 ],
               ),
             ),
