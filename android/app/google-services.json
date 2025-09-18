@@ -22,6 +22,14 @@
           }
         },
         {
+          "client_id": "571641120158-in7tfkk742o01lj2pu5ukjck46l8jss0.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.docomohack",
+            "certificate_hash": "057a5f39303586016354a1d9c0619b9dbb9bb76b"
+          }
+        },
+        {
           "client_id": "571641120158-i7diqnjg7hqd2m6gorpj928if8oj56j1.apps.googleusercontent.com",
           "client_type": 3
         }
