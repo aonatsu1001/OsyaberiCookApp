@@ -6,11 +6,13 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'firebase_options.dart';
 import 'widgets/auth_gate.dart';
 import 'app_lifecycle_reactor.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart'; // 追加
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-
+  // ▼▼▼ この行を追加 ▼▼▼
+  await dotenv.load(fileName: "assets/.env");
   // 毎回起動時にサインアウト
   await FirebaseAuth.instance.signOut();
   await GoogleSignIn().signOut();
