@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
-// ▼▼▼ この行を修正しました ▼▼▼
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:provider/provider.dart';
+
+// 実際のプロジェクトの階層に合わせてパスを調整してください
+import '../speech_to_text/providers/speech_provider.dart';
+import 'voice_interaction_page.dart';
 
 class RecipeProgressPage extends StatelessWidget {
   final String recipeId; // レシピID
@@ -57,7 +61,9 @@ class RecipeProgressPage extends StatelessWidget {
                       builder: (context, snapshot) {
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {
-                          return const Center(child: CircularProgressIndicator());
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
                         }
                         if (!snapshot.hasData || !snapshot.data!.exists) {
                           return const Text(
@@ -65,17 +71,19 @@ class RecipeProgressPage extends StatelessWidget {
                             style: TextStyle(color: Colors.red),
                           );
                         }
-                        
+
                         final docData = snapshot.data!.data();
                         if (docData == null || docData.isEmpty) {
-                           return const Text(
+                          return const Text(
                             '材料が登録されていません',
                             style: TextStyle(color: Colors.red),
                           );
                         }
 
                         final sortedKeys = docData.keys.toList()..sort();
-                        final ingredients = sortedKeys.map((key) => docData[key] as Map<String, dynamic>).toList();
+                        final ingredients = sortedKeys
+                            .map((key) => docData[key] as Map<String, dynamic>)
+                            .toList();
 
                         return Table(
                           columnWidths: const {
@@ -86,11 +94,15 @@ class RecipeProgressPage extends StatelessWidget {
                             return TableRow(
                               children: [
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 4),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 4,
+                                  ),
                                   child: Text(data['name'] ?? ''),
                                 ),
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 4),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 4,
+                                  ),
                                   child: Text(data['amount'] ?? ''),
                                 ),
                               ],
@@ -107,9 +119,23 @@ class RecipeProgressPage extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
+                // ▼▼▼ ここから修正 ▼▼▼
                 onPressed: () {
-                  // 今後、手順画面へ遷移する処理を追加
+                  // VoiceInteractionPageに遷移し、レシピIDと名前を渡す
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => ChangeNotifierProvider(
+                        create: (_) => SpeechProvider(),
+                        child: VoiceInteractionPage(
+                          recipeId: recipeId,
+                          recipeName: recipeName,
+                        ),
+                      ),
+                    ),
+                  );
                 },
+                // ▲▲▲ ここまで修正 ▲▲▲
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.black,
                   foregroundColor: Colors.white,
