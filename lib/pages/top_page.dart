@@ -166,24 +166,12 @@ class RecipeCard extends ConsumerWidget {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
-                      final content = recipeData['content'] ?? {};
-                      final ingredients =
-                          (content['ingredients'] as List<dynamic>?)
-                              ?.map((e) => Map<String, dynamic>.from(e))
-                              .toList() ??
-                          [];
-                      final steps =
-                          (content['steps'] as List<dynamic>?)
-                              ?.map((e) => Map<String, dynamic>.from(e))
-                              .toList() ??
-                          [];
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => RecipeProgressPage(
+                            recipeId: recipeDoc.id, // レシピIDを渡す
                             recipeName: recipeData['recipeName'] ?? '',
-                            ingredients: ingredients,
-                            steps: steps,
                           ),
                         ),
                       );

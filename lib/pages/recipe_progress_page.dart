@@ -1,19 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class RecipeProgressPage extends StatelessWidget {
+  final String recipeId; // レシピID
   final String recipeName;
-  final List<Map<String, dynamic>> ingredients;
-  final List<Map<String, dynamic>> steps;
 
   const RecipeProgressPage({
     super.key,
+    required this.recipeId,
     required this.recipeName,
-    required this.ingredients,
-    required this.steps,
   });
 
   @override
   Widget build(BuildContext context) {
+    print('--- RecipeProgressPage ---');
+    print('recipeId: $recipeId');
+    print('recipeName: $recipeName');
+
     return Scaffold(
       backgroundColor: const Color(0xFFFDF2E9),
       appBar: AppBar(
@@ -31,61 +34,70 @@ class RecipeProgressPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 進行状況バー
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  '進行状況',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                Text('0/${steps.length} 完了'),
-              ],
-            ),
-            const SizedBox(height: 8),
-            LinearProgressIndicator(
-              value: 0,
-              minHeight: 8,
-              backgroundColor: Colors.grey[300],
-            ),
-            const SizedBox(height: 24),
+            // 材料リスト（サブコレクションから取得）
             const Text(
               '材料を確認してください。',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
             ),
             const SizedBox(height: 12),
-            // 材料リスト
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(12.0),
-                child: Table(
-                  columnWidths: const {
-                    0: FlexColumnWidth(2),
-                    1: FlexColumnWidth(1),
-                  },
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const TableRow(
-                      children: [
-                        Text(
-                          '必要な材料',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        Text('', style: TextStyle(fontWeight: FontWeight.bold)),
-                      ],
+                    const Text(
+                      '必要な材料（2人分）',
+                      style: TextStyle(fontWeight: FontWeight.bold),
                     ),
-                    ...ingredients.map(
-                      (item) => TableRow(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 4),
-                            child: Text(item['name'] ?? ''),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 4),
-                            child: Text(item['amount'] ?? ''),
-                          ),
-                        ],
-                      ),
+                    const SizedBox(height: 8),
+                    StreamBuilder<QuerySnapshot>(
+                      stream: FirebaseFirestore.instance
+                          .collection('recipes')
+                          .doc(recipeId)
+                          .collection('ingredients')
+                          .orderBy(FieldPath.documentId)
+                          .snapshots(),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        }
+                        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                          return const Text(
+                            '材料データがありません',
+                            style: TextStyle(color: Colors.red),
+                          );
+                        }
+                        final ingredients = snapshot.data!.docs;
+                        return Table(
+                          columnWidths: const {
+                            0: FlexColumnWidth(2),
+                            1: FlexColumnWidth(1),
+                          },
+                          children: ingredients.map((doc) {
+                            final data = doc.data() as Map<String, dynamic>;
+                            return TableRow(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 4,
+                                  ),
+                                  child: Text(data['name'] ?? ''),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 4,
+                                  ),
+                                  child: Text(data['amount'] ?? ''),
+                                ),
+                              ],
+                            );
+                          }).toList(),
+                        );
+                      },
                     ),
                   ],
                 ),
