@@ -1,7 +1,6 @@
 // lib/providers/speech_provider.dart
 
 import 'package:flutter/material.dart';
-import 'dart:async'; // Future.delayedのためにインポート
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import '../services/speech_service.dart';
@@ -17,10 +16,9 @@ class SpeechProvider with ChangeNotifier {
   // 確定したテキストを外部に渡すためのコールバック
   Function(String)? onTextFinalized;
 
-  // ▼▼▼ ここから修正 ▼▼▼
-  // ユーザーが明示的に停止したか（＝自動再開を無効にするか）を管理するフラグ
-  // 初期状態は停止しているため true
-  bool _stopPermanently = true;
+  // ▼▼▼ 修正 ▼▼▼
+  // 自動再開を制御するためのフラグ
+  bool _shouldAutoRestart = false;
   // ▲▲▲ ここまで修正 ▲▲▲
 
   bool get isAvailable => _isAvailable;
@@ -38,37 +36,34 @@ class SpeechProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  /// 音声認識を開始する
-  void startListening() {
-    if (!_isAvailable || _isListening) return;
-
-    // ▼▼▼ ここから修正 ▼▼▼
-    // リスニング開始時は、自動再開を有効にする
-    _stopPermanently = false;
-    // ▲▲▲ ここまで修正 ▲▲▲
-
+  // ▼▼▼ 修正 ▼▼▼
+  /// 内部的にリスニングを開始する処理
+  void _internalStartListening() {
+    if (!_isAvailable || !_shouldAutoRestart) return;
     _speechService.startListening(
       onResult: _onSpeechResult,
       onStatus: _onStatusChanged,
     );
-    _isListening = true;
-    notifyListeners();
+    if (!_isListening) {
+      _isListening = true;
+      notifyListeners();
+    }
   }
 
-  /// 音声認識を（自動再開せずに）完全に停止する
+  /// 音声認識を開始し、自動再開を有効にする
+  void startListening() {
+    if (_isListening) return;
+    _shouldAutoRestart = true;
+    _internalStartListening();
+  }
+
+  /// 音声認識を停止し、自動再開を無効にする
   void stopListening() {
-    // ▼▼▼ ここから修正 ▼▼▼
-    // 既に止まっている場合は何もしない
-    if (!_isListening && _stopPermanently) return;
-
-    // 自動再開を無効にする
-    _stopPermanently = true;
+    _shouldAutoRestart = false;
     _speechService.stopListening();
-    _isListening = false;
-    _lastWords = '';
-    notifyListeners();
-    // ▲▲▲ ここまで修正 ▲▲▲
+    // 状態の更新は _onStatusChanged に任せる
   }
+  // ▲▲▲ ここまで修正 ▲▲▲
 
   /// 認識結果が更新されたときのコールバック
   void _onSpeechResult(SpeechRecognitionResult result) {
@@ -78,37 +73,44 @@ class SpeechProvider with ChangeNotifier {
 
   /// 認識状態が変化したときのコールバック
   void _onStatusChanged(String status) {
+    // ▼▼▼ 修正 ▼▼▼
     final isCurrentlyListening = (status == SpeechToText.listeningStatus);
+    if (_isListening != isCurrentlyListening) {
+      _isListening = isCurrentlyListening;
+      notifyListeners();
+    }
 
-    // 状態に変化がなければ何もしない
-    if (_isListening == isCurrentlyListening) return;
-
-    _isListening = isCurrentlyListening;
-
-    // リスニングが停止した場合の処理
-    if (!_isListening) {
+    // リスニングが終了した場合
+    if (status == SpeechToText.notListeningStatus ||
+        status == SpeechToText.doneStatus) {
       // 確定したテキストがあれば処理
       if (_lastWords.isNotEmpty) {
         final finalizedText = _lastWords.trim();
         _history.add(finalizedText);
+        // コールバックを介して確定したテキストを通知
         onTextFinalized?.call(finalizedText);
       }
-      _lastWords = '';
+      _lastWords = ''; // 認識中のテキストをクリア
+      notifyListeners(); // クリアしたことをUIに反映
 
-      // ▼▼▼ ここから修正 ▼▼▼
-      // ユーザーが意図的に停止していなければ、自動的にリスニングを再開する
-      if (!_stopPermanently) {
-        // 短い遅延を挟むことで、プラットフォーム側のエラーを回避する
+      // 自動再開フラグが立っていれば、再度リスニングを開始
+      if (_shouldAutoRestart) {
+        // 少し間を置いて再開することで、連続的なエラーを防ぐ
         Future.delayed(const Duration(milliseconds: 100), () {
-          // 遅延後にもう一度フラグを確認し、停止が要求されていない場合のみ再開
-          if (!_stopPermanently) {
-            startListening();
+          if (_shouldAutoRestart) {
+            // delayed後にもう一度チェック
+            _internalStartListening();
           }
         });
       }
-      // ▲▲▲ ここまで修正 ▲▲▲
     }
+    // ▲▲▲ ここまで修正 ▲▲▲
+  }
 
-    notifyListeners();
+  // Providerが破棄されるときに自動再開を確実に停止する
+  @override
+  void dispose() {
+    _shouldAutoRestart = false;
+    super.dispose();
   }
 }

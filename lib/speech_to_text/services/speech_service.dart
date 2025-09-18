@@ -29,20 +29,16 @@ class SpeechService {
       print("音声認識が利用できません。");
       return;
     }
-
-    // ▼▼▼ 変更点 ▼▼▼
-    // タイムアウト時間を設定し、無音での停止時間を最大まで延長
-    const listenDuration = Duration(minutes: 5);
-    // ▲▲▲ ここまで ▲▲▲
-
     _speechToText.listen(
       onResult: onResult,
-      // ▼▼▼ 変更点 ▼▼▼
-      listenFor: listenDuration,
-      pauseFor: listenDuration, // 無音で停止するまでの時間を最大に設定
-      // ▲▲▲ ここまで ▲▲▲
-      localeId: 'ja_JP',
+      listenFor: const Duration(minutes: 5), // タイムアウト時間は長めに設定
+      // ▼▼▼ 修正 ▼▼▼
+      // ユーザーが少し考えても途切れないように無音時間を5秒に設定
+      pauseFor: const Duration(seconds: 5),
+      // ▲▲▲ ここまで修正 ▲▲▲
+      localeId: 'ja_JP', // 日本語に設定
     );
+    // onStatusが非推奨になったため、statusListenerを使用
     _speechToText.statusListener = onStatus;
   }
 

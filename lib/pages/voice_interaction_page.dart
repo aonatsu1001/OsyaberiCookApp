@@ -77,7 +77,6 @@ class _VoiceInteractionPageState extends State<VoiceInteractionPage>
     _functionCallingService = FunctionCallingService();
     _sequenceManager = SequenceManager([]);
 
-    // ▼▼▼ ここから修正 ▼▼▼
     // buildメソッド完了後にProviderのリスナー設定とリスニング開始を行う
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final speechProvider = context.read<SpeechProvider>();
@@ -90,7 +89,6 @@ class _VoiceInteractionPageState extends State<VoiceInteractionPage>
       // ページ表示時にリスニングを開始
       speechProvider.startListening();
     });
-    // ▲▲▲ ここまで修正 ▲▲▲
 
     _fetchRecipeSteps();
   }
@@ -149,11 +147,9 @@ class _VoiceInteractionPageState extends State<VoiceInteractionPage>
 
   @override
   void dispose() {
-    // ▼▼▼ ここから修正 ▼▼▼
     // ページを離れるときにリスニングを確実に停止する
     // Provider.ofを使用し、listen: false とすることで安全に呼び出す
     Provider.of<SpeechProvider>(context, listen: false).stopListening();
-    // ▲▲▲ ここまで修正 ▲▲▲
     _pageController.dispose();
     _timer?.cancel();
     _animationController.dispose();
@@ -169,10 +165,8 @@ class _VoiceInteractionPageState extends State<VoiceInteractionPage>
       _isLlmProcessing = true;
     });
 
-    // ▼▼▼ ここから修正 ▼▼▼
     // AI処理中は音声認識を明示的に停止
     context.read<SpeechProvider>().stopListening();
-    // ▲▲▲ ここまで修正 ▲▲▲
 
     try {
       if (_sequenceManager.items.isEmpty) {
@@ -182,7 +176,6 @@ class _VoiceInteractionPageState extends State<VoiceInteractionPage>
             ChatMessage(text: "レシピの手順を準備中です。少々お待ちください。", isUser: false),
           );
         });
-        // この場合でも finally は実行される
         return;
       }
 
@@ -265,7 +258,6 @@ class _VoiceInteractionPageState extends State<VoiceInteractionPage>
         );
       });
     } finally {
-      // ▼▼▼ ここから修正 ▼▼▼
       // 処理が完了したら、必ず処理中フラグを下げて音声認識を再開する
       if (mounted) {
         setState(() {
@@ -273,7 +265,6 @@ class _VoiceInteractionPageState extends State<VoiceInteractionPage>
         });
         context.read<SpeechProvider>().startListening();
       }
-      // ▲▲▲ ここまで修正 ▲▲▲
     }
   }
 
@@ -351,6 +342,9 @@ class _VoiceInteractionPageState extends State<VoiceInteractionPage>
               const SizedBox(height: 20),
               _buildConversationLog(),
               const SizedBox(height: 20),
+              // ▼▼▼ 追加 ▼▼▼
+              _buildRecognizingText(speechProvider),
+              // ▲▲▲ 追加 ▲▲▲
               _buildBigMicIndicator(speechProvider),
               const SizedBox(height: 16),
             ],
@@ -359,6 +353,31 @@ class _VoiceInteractionPageState extends State<VoiceInteractionPage>
       ),
     );
   }
+
+  // ▼▼▼ 追加 ▼▼▼
+  /// 認識中のテキストを表示するウィジェット
+  Widget _buildRecognizingText(SpeechProvider provider) {
+    // リスニング中で、かつ認識中のテキストがある場合に表示
+    if (provider.isListening && provider.lastWords.isNotEmpty) {
+      return Container(
+        height: 44.0, // 高さを固定してレイアウトのガタつきを防ぐ
+        alignment: Alignment.center,
+        child: Text(
+          '"${provider.lastWords}"',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 18,
+            color: Colors.grey.shade700,
+            fontStyle: FontStyle.italic,
+          ),
+        ),
+      );
+    } else {
+      // それ以外の場合は高さを確保しつつ空のコンテナを返す
+      return const SizedBox(height: 44.0);
+    }
+  }
+  // ▲▲▲ 追加 ▲▲▲
 
   Widget _buildProgressSection() {
     return Column(
